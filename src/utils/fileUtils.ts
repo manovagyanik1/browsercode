@@ -25,7 +25,6 @@ export function sortFileNodes(nodes: FileNode[]): FileNode[] {
         if (aIsSpecial && !bIsSpecial) return 1;
         if (!aIsSpecial && bIsSpecial) return -1;
         if (aIsSpecial && bIsSpecial) {
-          // Sort special files based on their order in SPECIAL_FILES
           return SPECIAL_FILES.indexOf(a.name) - SPECIAL_FILES.indexOf(b.name);
         }
       }
@@ -52,4 +51,22 @@ export function getFileLanguage(filePath: string): string {
   };
 
   return languageMap[extension || ''] || 'plaintext';
+}
+
+export function isFileEditable(path: string): boolean {
+  // Don't allow editing directories
+  if (path.endsWith('/')) return false;
+  
+  // Get the file extension
+  const extension = path.split('.').pop()?.toLowerCase();
+  
+  // List of editable extensions
+  const editableExtensions = [
+    'txt', 'md', 'js', 'jsx', 'ts', 'tsx', 
+    'css', 'scss', 'less', 'html', 'json',
+    'yml', 'yaml', 'xml', 'svg', 'env',
+    'gitignore', 'dockerignore', 'sh', 'bash'
+  ];
+  
+  return extension ? editableExtensions.includes(extension) : false;
 }
