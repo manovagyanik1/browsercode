@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Target, Lock, Plus, FolderPlus } from 'lucide-react';
-import { useFileSystem } from '../../context/FileSystemContext';
+import { Target, Lock, Plus, FolderPlus, FileText, Folder } from 'lucide-react';
 
 interface ContextMenuProps {
   x: number;
@@ -9,11 +8,21 @@ interface ContextMenuProps {
   isDirectory: boolean;
   onClose: () => void;
   onRename: () => void;
+  onCreateFile?: () => void;
+  onCreateFolder?: () => void;
 }
 
-export function ContextMenu({ x, y, path, isDirectory, onClose, onRename }: ContextMenuProps) {
+export function ContextMenu({
+  x,
+  y,
+  path,
+  isDirectory,
+  onClose,
+  onRename,
+  onCreateFile,
+  onCreateFolder
+}: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const { createFile, createDirectory, deleteFile } = useFileSystem();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,25 +35,25 @@ export function ContextMenu({ x, y, path, isDirectory, onClose, onRename }: Cont
   }, [onClose]);
 
   const menuItems = [
-    {
-      label: 'New file...',
-      icon: Plus,
-      action: () => {
-        createFile(path + '/untitled');
-        onClose();
+    ...(isDirectory ? [
+      {
+        label: 'New File',
+        icon: FileText,
+        action: () => {
+          onCreateFile?.();
+          onClose();
+        }
       },
-      showFor: 'directory'
-    },
-    {
-      label: 'New folder...',
-      icon: FolderPlus,
-      action: () => {
-        createDirectory(path + '/untitled');
-        onClose();
+      {
+        label: 'New Folder',
+        icon: Folder,
+        action: () => {
+          onCreateFolder?.();
+          onClose();
+        }
       },
-      showFor: 'directory'
-    },
-    { type: 'separator', showFor: 'directory' },
+      { type: 'separator' as const }
+    ] : []),
     {
       label: 'Target file',
       icon: Target,
@@ -59,7 +68,7 @@ export function ContextMenu({ x, y, path, isDirectory, onClose, onRename }: Cont
         onClose();
       }
     },
-    { type: 'separator' },
+    { type: 'separator' as const },
     {
       label: 'Cut',
       action: () => {
@@ -87,17 +96,17 @@ export function ContextMenu({ x, y, path, isDirectory, onClose, onRename }: Cont
         onClose();
       }
     },
-    { type: 'separator' },
+    { type: 'separator' as const },
     {
       label: 'Rename...',
       action: () => {
         onRename();
+        onClose();
       }
     },
     {
       label: 'Delete',
       action: () => {
-        deleteFile(path);
         onClose();
       }
     }
@@ -111,13 +120,7 @@ export function ContextMenu({ x, y, path, isDirectory, onClose, onRename }: Cont
     >
       {menuItems.map((item, index) => {
         if (item.type === 'separator') {
-          return item.showFor && item.showFor !== (isDirectory ? 'directory' : 'file') ? null : (
-            <div key={index} className="h-px bg-[#454545] my-1" />
-          );
-        }
-
-        if (item.showFor && item.showFor !== (isDirectory ? 'directory' : 'file')) {
-          return null;
+          return <div key={index} className="h-px bg-[#454545] my-1" />;
         }
 
         return (
