@@ -199,7 +199,7 @@ export function setupMonacoTypescript(monaco: Monaco, files: FileNode[]) {
     keybindings: [
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB,
       monaco.KeyMod.Alt | monaco.KeyCode.KeyB,
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.leftButton
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter
     ],
     precondition: undefined,
     keybindingContext: undefined,

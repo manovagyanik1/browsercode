@@ -61,7 +61,7 @@ export function EditorPane() {
               },
               suggestOnTriggerCharacters: true,
               acceptSuggestionOnCommitCharacter: true,
-              wordBasedSuggestions: true,
+              wordBasedSuggestions: "allDocuments",
               parameterHints: {
                 enabled: true
               },
