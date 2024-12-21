@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { EditorPane } from './components/Editor/EditorPane';
 import { FileExplorer } from './components/FileExplorer';
@@ -7,8 +7,12 @@ import { Preview } from './components/Preview/Preview';
 import { FileSystemProvider } from './context/FileSystemContext';
 import { ResizablePanel } from './components/ResizablePanel';
 import { PreviewProvider } from './context/PreviewContext';
+import { VerticalResizeHandle } from './components/VerticalResizeHandle';
 
 export default function App() {
+  const [explorerWidth, setExplorerWidth] = useState(240);
+  const [terminalHeight, setTerminalHeight] = useState(200);
+
   useEffect(() => {
     // Handle page refresh and tab close
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -46,9 +50,14 @@ export default function App() {
       <PreviewProvider>
         <div className="flex flex-col h-screen bg-gray-900 text-gray-100">
           <Header />
-          <main className="flex-1 flex">
-            <FileExplorer />
-            <div className="flex-1 flex flex-col">
+          <main className="flex-1 flex overflow-hidden">
+            <div style={{ width: explorerWidth, minWidth: 160 }} className="flex-shrink-0">
+              <FileExplorer />
+            </div>
+            <VerticalResizeHandle
+              onResize={(delta) => setExplorerWidth(prev => Math.max(160, Math.min(480, prev + delta)))}
+            />
+            <div className="flex-1 flex flex-col overflow-hidden">
               <ResizablePanel
                 leftPanel={<EditorPane />}
                 rightPanel={<Preview />}
@@ -56,7 +65,12 @@ export default function App() {
                 minLeftWidth={30}
                 minRightWidth={20}
               />
-              <Terminal />
+              <VerticalResizeHandle
+                onResize={(delta) => setTerminalHeight(prev => Math.max(100, Math.min(800, prev + delta)))}
+              />
+              <div style={{ height: terminalHeight }} className="flex-shrink-0">
+                <Terminal />
+              </div>
             </div>
           </main>
         </div>

@@ -11,13 +11,12 @@ interface ResizablePanelProps {
 export function ResizablePanel({
   leftPanel,
   rightPanel,
-  initialLeftWidth = 60,
+  initialLeftWidth = 50,
   minLeftWidth = 20,
   minRightWidth = 20,
 }: ResizablePanelProps) {
   const [leftWidth, setLeftWidth] = useState(initialLeftWidth);
   const containerRef = useRef<HTMLDivElement>(null);
-  const dividerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
   useEffect(() => {
@@ -25,12 +24,11 @@ export function ResizablePanel({
     if (!container) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !container) return;
+      if (!isDragging.current) return;
 
       const containerRect = container.getBoundingClientRect();
       const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-      // Enforce min widths
       if (newLeftWidth >= minLeftWidth && (100 - newLeftWidth) >= minRightWidth) {
         setLeftWidth(newLeftWidth);
       }
@@ -40,6 +38,12 @@ export function ResizablePanel({
       isDragging.current = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      
+      // Remove the overlay when dragging stops
+      const overlay = document.getElementById('resize-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -55,6 +59,17 @@ export function ResizablePanel({
     isDragging.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
+
+    // Create an overlay to prevent iframe interference
+    const overlay = document.createElement('div');
+    overlay.id = 'resize-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.zIndex = '9999';
+    document.body.appendChild(overlay);
   };
 
   return (
@@ -63,7 +78,6 @@ export function ResizablePanel({
         {leftPanel}
       </div>
       <div
-        ref={dividerRef}
         className="w-1 bg-gray-800 hover:bg-blue-500 cursor-col-resize transition-colors flex-shrink-0"
         onMouseDown={handleDragStart}
       />
