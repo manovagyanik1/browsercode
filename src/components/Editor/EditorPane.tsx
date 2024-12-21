@@ -86,7 +86,6 @@ export function EditorPane() {
               ...EDITOR_OPTIONS,
               quickSuggestions: true,
               suggestOnTriggerCharacters: true,
-              semanticHighlighting: true,
             }}
             onChange={handleEditorChange}
             path={currentFile}

@@ -189,9 +189,10 @@ export async function syncFileSystem(setFiles: (files: FileNode[]) => void) {
   setFiles(files);
 
   // Watch for changes
-  webcontainer.fs.watch('/', { recursive: true }, async (type, path) => {
+  webcontainer.fs.watch('/', { recursive: true }, async (_type: string, watchPath: string | Uint8Array) => {
     // Skip file events from ignored paths
-    if (IGNORED_PATHS.some(ignored => path.includes(ignored))) {
+    const path = watchPath.toString();
+    if (IGNORED_PATHS.some(ignored => path.indexOf(ignored) !== -1)) {
       return;
     }
     const updatedFiles = await buildFileTree();
