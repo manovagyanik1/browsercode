@@ -123,6 +123,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   return (
     <FileSystemContext.Provider value={{
       files,
+      setFiles,
       currentFile,
       createFile,
       createDirectory,

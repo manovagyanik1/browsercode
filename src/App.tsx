@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Header } from './components/Header';
 import { EditorPane } from './components/Editor/EditorPane';
 import { FileExplorer } from './components/FileExplorer';
@@ -8,6 +9,38 @@ import { ResizablePanel } from './components/ResizablePanel';
 import { PreviewProvider } from './context/PreviewContext';
 
 export default function App() {
+  useEffect(() => {
+    // Handle page refresh and tab close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const message = 'You will lose all your changes. Are you sure you want to leave?';
+      e.preventDefault();
+      e.returnValue = message;
+      return message;
+    };
+
+    // Handle browser back button
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (window.confirm('You will lose all your changes. Are you sure you want to leave?')) {
+        window.history.go(-1);
+      } else {
+        // Push a new state to prevent leaving
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+
+    // Push initial state to enable back button handling
+    window.history.pushState(null, '', window.location.href);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   return (
     <FileSystemProvider>
       <PreviewProvider>

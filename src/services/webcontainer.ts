@@ -137,3 +137,64 @@ export async function startShell() {
     throw error;
   }
 }
+
+const IGNORED_PATHS = [
+  'node_modules',
+  '.git',
+  'dist',
+  '.cache',
+  '.vscode',
+  '.DS_Store'
+];
+
+export async function syncFileSystem(setFiles: (files: FileNode[]) => void) {
+  const webcontainer = await getWebContainerInstance();
+  
+  async function buildFileTree(path: string = '/'): Promise<FileNode[]> {
+    const entries = await webcontainer.fs.readdir(path, { withFileTypes: true });
+    const nodes: FileNode[] = [];
+
+    for (const entry of entries) {
+      // Skip ignored paths
+      if (IGNORED_PATHS.includes(entry.name)) {
+        continue;
+      }
+
+      const fullPath = path === '/' ? `/${entry.name}` : `${path}/${entry.name}`;
+      
+      if (entry.isDirectory()) {
+        const children = await buildFileTree(fullPath);
+        nodes.push({
+          name: entry.name,
+          path: fullPath,
+          type: 'directory',
+          children
+        });
+      } else {
+        const content = await webcontainer.fs.readFile(fullPath, 'utf-8');
+        nodes.push({
+          name: entry.name,
+          path: fullPath,
+          type: 'file',
+          content
+        });
+      }
+    }
+
+    return nodes;
+  }
+
+  // Initial sync
+  const files = await buildFileTree();
+  setFiles(files);
+
+  // Watch for changes
+  webcontainer.fs.watch('/', { recursive: true }, async (type, path) => {
+    // Skip file events from ignored paths
+    if (IGNORED_PATHS.some(ignored => path.includes(ignored))) {
+      return;
+    }
+    const updatedFiles = await buildFileTree();
+    setFiles(updatedFiles);
+  });
+}

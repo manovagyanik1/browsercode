@@ -6,6 +6,8 @@ import { initializeTemplate } from '../../services/templateService';
 import { TerminalHeader } from './TerminalHeader';
 import { usePreview } from '../../context/PreviewContext';
 import 'xterm/css/xterm.css';
+import { useFileSystem } from '../../context/FileSystemContext';
+import { syncFileSystem } from '../../services/webcontainer';
 
 export function Terminal() {
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -13,6 +15,7 @@ export function Terminal() {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [isTerminalReady, setIsTerminalReady] = useState(false);
   const { setPreviewUrl } = usePreview();
+  const { setFiles } = useFileSystem();
 
   // Initialize xterm
   useLayoutEffect(() => {
@@ -76,6 +79,15 @@ export function Terminal() {
         // Create template directory
         await initializeTemplate(webcontainer);
 
+        // Start syncing filesystem
+        await syncFileSystem(setFiles);
+
+        // Listen for server-ready event
+        webcontainer.on('server-ready', (port, url) => {
+          const previewUrl = url.replace('localhost', 'localhost.webcontainer.io');
+          setPreviewUrl(previewUrl);
+        });
+
         // Start shell and connect to terminal
         shellProcess = await webcontainer.spawn('jsh', {
           terminal: {
@@ -111,9 +123,12 @@ export function Terminal() {
         // Initialize project
         const writer = shellProcess.input.getWriter();
         try {
-          writer.write('mkdir typescript-template\n');
           writer.write('cd typescript-template\n');
           writer.write('npm create vite@latest . -- --template react-ts\n');
+          // After project creation, start the dev server
+          setTimeout(() => {
+            writer.write('npm install && npm run dev\n');
+          }, 6000);
         } finally {
           writer.releaseLock();
         }
@@ -129,7 +144,7 @@ export function Terminal() {
     return () => {
       shellProcess?.kill();
     };
-  }, [isTerminalReady]);
+  }, [isTerminalReady, setFiles, setPreviewUrl]);
 
   return (
     <div className="flex flex-col">
