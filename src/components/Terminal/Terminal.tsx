@@ -18,6 +18,7 @@ export function Terminal() {
   const { setFiles } = useFileSystem();
   const [terminals, setTerminals] = useState<Array<{ id: string; process: any }>>([{ id: '1', process: null }]);
   const [activeTerminal, setActiveTerminal] = useState('1');
+  const isPrimaryTerminal = useRef(true);
 
   // Initialize xterm
   useLayoutEffect(() => {
@@ -77,18 +78,19 @@ export function Terminal() {
     const initWebContainer = async () => {
       try {
         const webcontainer = await getWebContainerInstance();
-
-        // Listen for server-ready event before starting anything
-        webcontainer.on('server-ready', (port, url) => {
-          console.log('Server ready on port:', port);
-          console.log('Original URL:', url);
-          // Convert localhost URL to WebContainer URL
-          const previewUrl = url.replace('localhost', 'localhost.webcontainer.io');
-          console.log('Preview URL:', previewUrl);
-          setPreviewUrl(previewUrl);
-        });
         
-        // Start shell first and connect to terminal
+        // Only set up server-ready listener for primary terminal
+        if (isPrimaryTerminal.current) {
+          webcontainer.on('server-ready', (port, url) => {
+            console.log('Server ready on port:', port);
+            console.log('Original URL:', url);
+            const previewUrl = url.replace('localhost', 'localhost.webcontainer.io');
+            console.log('Preview URL:', previewUrl);
+            setPreviewUrl(previewUrl);
+          });
+        }
+        
+        // Start shell and connect to terminal
         shellProcess = await webcontainer.spawn('jsh', {
           terminal: {
             cols: 80,
@@ -125,17 +127,26 @@ export function Terminal() {
           })();
         }
 
-        // Create template directory and initialize project
-        await initializeTemplate(webcontainer);
-        await syncFileSystem(setFiles);
+        // Only run initialization in primary terminal
+        if (isPrimaryTerminal.current) {
+          await initializeTemplate(webcontainer);
+          await syncFileSystem(setFiles);
 
-        // Run commands in sequence
-        const writer = shellProcess.input.getWriter();
-        try {
-          // Create project with -y flag and chain commands
-          writer.write('yes | npm create vite@latest typescript-template -- --template react-ts && cd typescript-template && npm install && npm run dev\n');
-        } finally {
-          writer.releaseLock();
+          const writer = shellProcess.input.getWriter();
+          try {
+            writer.write('yes | npm create vite@latest typescript-template -- --template react-ts && cd typescript-template && npm install && npm run dev\n');
+          } finally {
+            writer.releaseLock();
+          }
+          isPrimaryTerminal.current = false; // Mark as used
+        } else {
+          // For secondary terminals, just cd into the project directory
+          const writer = shellProcess.input.getWriter();
+          try {
+            writer.write('cd typescript-template\n');
+          } finally {
+            writer.releaseLock();
+          }
         }
 
       } catch (error) {
@@ -157,10 +168,29 @@ export function Terminal() {
     setActiveTerminal(newId);
   };
 
+  const handleTerminalClose = (id: string) => {
+    // Find and kill the process
+    const terminal = terminals.find(t => t.id === id);
+    terminal?.process?.kill();
+
+    // Remove the terminal
+    setTerminals(prev => prev.filter(t => t.id !== id));
+    
+    // If we're closing the active terminal, switch to the first terminal
+    if (activeTerminal === id) {
+      setActiveTerminal('1');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center bg-[#1e1e1e] border-b border-[#2d2d2d]">
-        <TerminalHeader terminals={terminals} activeTerminal={activeTerminal} onTerminalSelect={setActiveTerminal} />
+        <TerminalHeader 
+          terminals={terminals} 
+          activeTerminal={activeTerminal} 
+          onTerminalSelect={setActiveTerminal}
+          onTerminalClose={handleTerminalClose}
+        />
         <button
           onClick={addNewTerminal}
           className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-[#2d2d2d] rounded"
