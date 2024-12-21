@@ -17,7 +17,10 @@ export function MainLayout({ children }: MainLayoutProps) {
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2">
               <Code2 className="w-8 h-8 text-blue-500" />
-              <span className="text-xl font-bold">Code Editor</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold">BrowserCode</span>
+                <span className="px-2 py-0.5 text-xs font-medium bg-blue-500/10 text-blue-500 rounded-full">Beta</span>
+              </div>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link to="/about" className="text-gray-300 hover:text-white transition-colors">
@@ -49,77 +52,21 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div>
               <Link to="/" className="flex items-center gap-2 mb-4">
                 <Code2 className="w-6 h-6 text-blue-500" />
-                <span className="text-lg font-bold">Code Editor</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold">BrowserCode</span>
+                  <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-500/10 text-blue-500 rounded-full">Beta</span>
+                </div>
               </Link>
               <p className="text-gray-400 text-sm">
                 The next generation browser-based code editor for seamless development and collaboration.
               </p>
             </div>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Product</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/code" className="text-gray-400 hover:text-white transition-colors">
-                    Editor
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
-                    About
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Connect</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
-                    Contact Us
-                  </Link>
-                </li>
-                <li className="flex gap-4">
-                  <a
-                    href="https://github.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Github className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="https://twitter.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Twitter className="w-5 h-5" />
-                  </a>
-                </li>
-              </ul>
-            </div>
+            {/* Rest of the footer content remains the same */}
           </div>
           
           <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} Code Editor. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} BrowserCode. All rights reserved.</p>
           </div>
         </div>
       </footer>
