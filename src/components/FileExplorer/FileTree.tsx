@@ -134,7 +134,17 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
               <EditableLabel
                 value=""
                 isEditing={true}
-                onSubmit={handleNewItemSubmit}
+                onSubmit={(name) => {
+                  if (name) {
+                    const path = `${isCreating.parentPath}/${name}`;
+                    if (isCreating.type === 'folder') {
+                      createDirectory(path);
+                    } else {
+                      createFile(path);
+                    }
+                  }
+                  onCreateFinish();
+                }}
                 onCancel={onCreateFinish}
               />
             </div>

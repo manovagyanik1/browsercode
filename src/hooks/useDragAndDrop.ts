@@ -11,7 +11,7 @@ export function useDragAndDrop() {
     setDraggedItem(path);
   };
 
-  const handleDragOver = (e: React.DragEvent, targetPath: string) => {
+  const handleDragOver = (e: React.DragEvent, targetPath?: string) => {
     e.preventDefault();
     e.stopPropagation();
     setDragTarget(targetPath);
