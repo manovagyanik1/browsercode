@@ -9,7 +9,7 @@ export function useDragAndDrop() {
     setDraggedItem(path);
   };
 
-  const handleDragOver = (e: React.DragEvent, targetPath: string) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.currentTarget.classList.add('bg-[#2a2d2e]');
   };

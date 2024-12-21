@@ -1,5 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { Target, Lock, Plus, FolderPlus, FileText, Folder } from 'lucide-react';
+import { Target, Lock, Plus, FolderPlus, FileText, Folder, LucideIcon } from 'lucide-react';
+
+type MenuItemType = {
+  label?: string;
+  icon?: LucideIcon;
+  action?: () => void;
+  type?: 'separator';
+};
 
 interface ContextMenuProps {
   x: number;
@@ -34,7 +41,7 @@ export function ContextMenu({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const menuItems = [
+  const menuItems: MenuItemType[] = [
     ...(isDirectory ? [
       {
         label: 'New File',

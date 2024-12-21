@@ -99,7 +99,7 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
         onContextMenu={handleContextMenu}
         draggable
         onDragStart={() => handleDragStart(node.path)}
-        onDragOver={(e) => isDirectory && handleDragOver(e, node.path)}
+        onDragOver={(e) => isDirectory && handleDragOver(e)}
         onDragLeave={(e) => isDirectory && handleDragLeave(e)}
         onDrop={(e) => isDirectory && handleDrop(e, node.path)}
       >
