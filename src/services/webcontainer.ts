@@ -98,12 +98,29 @@ export async function getWebContainerInstance() {
   return bootPromise;
 }
 
+export async function moveFile(oldPath: string, newPath: string) {
+  const webcontainer = await getWebContainerInstance();
+  
+  try {
+    // Read the file content
+    const content = await webcontainer.fs.readFile(oldPath, 'utf-8');
+    
+    // Create the new file with the content
+    await webcontainer.fs.writeFile(newPath, content);
+    
+    // Remove the old file
+    await webcontainer.fs.rm(oldPath);
+    
+    return true;
+  } catch (error) {
+    console.error('Error moving file:', error);
+    return false;
+  }
+}
+
 export async function mountFiles(files: FileNode[]) {
   const instance = await getWebContainerInstance();
   const webContainerFiles = convertToWebContainerFormat(files);
-  
-  // Log the structure for debugging
-  console.log('Mounting files:', webContainerFiles);
   
   try {
     await instance.mount(webContainerFiles);
