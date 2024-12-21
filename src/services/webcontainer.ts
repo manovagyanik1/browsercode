@@ -1,25 +1,47 @@
 import { WebContainer } from '@webcontainer/api';
 
-let webcontainerInstance: WebContainer;
+let webcontainerInstance: WebContainer | null = null;
+let bootPromise: Promise<WebContainer> | null = null;
 
 export async function getWebContainerInstance() {
-  if (!webcontainerInstance) {
-    webcontainerInstance = await WebContainer.boot();
+  if (webcontainerInstance) {
+    return webcontainerInstance;
   }
-  return webcontainerInstance;
-}
 
-export async function mountFiles(files: Record<string, any>) {
-  const instance = await getWebContainerInstance();
-  await instance.mount(files);
+  if (!bootPromise) {
+    bootPromise = WebContainer.boot()
+      .then((instance) => {
+        webcontainerInstance = instance;
+        return instance;
+      })
+      .catch((error) => {
+        console.error('Failed to boot WebContainer:', error);
+        bootPromise = null;
+        throw error;
+      });
+  }
+
+  return bootPromise;
 }
 
 export async function startShell() {
   const instance = await getWebContainerInstance();
-  return instance.spawn('jsh', {
-    terminal: {
-      cols: 80,
-      rows: 24,
-    },
-  });
+  
+  try {
+    const process = await instance.spawn('jsh', {
+      terminal: {
+        cols: 80,
+        rows: 24,
+      },
+    });
+
+    if (!process.input || !process.output) {
+      throw new Error('Shell process streams are not available');
+    }
+
+    return process;
+  } catch (error) {
+    console.error('Failed to start shell process:', error);
+    throw error;
+  }
 }
