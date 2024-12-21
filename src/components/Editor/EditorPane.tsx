@@ -23,49 +23,19 @@ export function EditorPane() {
       } catch (error) {
         console.error('Failed to save file:', error);
       }
-    }, 1000), // 1 second delay
+    }, 1000),
     []
   );
 
   useEffect(() => {
     if (monaco) {
       setupMonacoTypescript(monaco, files);
-
-      // Add command/ctrl + click navigation
-      monaco.editor.addEditorAction({
-        id: 'jumpToDefinition',
-        label: 'Jump to Definition',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB],
-        run: (editor) => {
-          const position = editor.getPosition();
-          if (!position) return;
-
-          const model = editor.getModel();
-          if (!model) return;
-
-          monaco.languages.typescript.getTypeScriptWorker().then(async (worker) => {
-            const client = await worker(model.uri);
-            const definitions = await client.getDefinitionAtPosition(
-              model.uri.toString(),
-              model.getOffsetAt(position)
-            );
-
-            if (definitions && definitions.length > 0) {
-              const def = definitions[0];
-              const filePath = def.fileName.replace('file:///', '');
-              setCurrentFile(filePath);
-            }
-          });
-        }
-      });
     }
-  }, [monaco, files, setCurrentFile]);
+  }, [monaco, files]);
 
   const handleEditorChange = async (value: string | undefined) => {
     if (currentFile && value !== undefined) {
-      // Update UI immediately
       updateFileContent(currentFile, value);
-      // Debounced save to filesystem
       debouncedSave(currentFile, value);
     }
   };
@@ -84,8 +54,21 @@ export function EditorPane() {
             theme="vs-dark"
             options={{
               ...EDITOR_OPTIONS,
-              quickSuggestions: true,
+              quickSuggestions: {
+                other: true,
+                comments: true,
+                strings: true
+              },
               suggestOnTriggerCharacters: true,
+              acceptSuggestionOnCommitCharacter: true,
+              wordBasedSuggestions: true,
+              parameterHints: {
+                enabled: true
+              },
+              mouseWheelZoom: true,
+              smoothScrolling: true,
+              links: true,
+              minimap: { enabled: false }
             }}
             onChange={handleEditorChange}
             path={currentFile}
