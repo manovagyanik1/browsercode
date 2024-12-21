@@ -16,6 +16,8 @@ export function Terminal() {
   const [isTerminalReady, setIsTerminalReady] = useState(false);
   const { setPreviewUrl } = usePreview();
   const { setFiles } = useFileSystem();
+  const [terminals, setTerminals] = useState<Array<{ id: string; process: any }>>([{ id: '1', process: null }]);
+  const [activeTerminal, setActiveTerminal] = useState('1');
 
   // Initialize xterm
   useLayoutEffect(() => {
@@ -76,25 +78,18 @@ export function Terminal() {
       try {
         const webcontainer = await getWebContainerInstance();
         
-        // Create template directory
-        await initializeTemplate(webcontainer);
-
-        // Start syncing filesystem
-        await syncFileSystem(setFiles);
-
-        // Listen for server-ready event
-        webcontainer.on('server-ready', (port, url) => {
-          const previewUrl = url.replace('localhost', 'localhost.webcontainer.io');
-          setPreviewUrl(previewUrl);
-        });
-
-        // Start shell and connect to terminal
+        // Start shell first and connect to terminal
         shellProcess = await webcontainer.spawn('jsh', {
           terminal: {
             cols: 80,
             rows: 24,
           }
         });
+
+        // Update the terminal process
+        setTerminals(prev => prev.map(t => 
+          t.id === activeTerminal ? { ...t, process: shellProcess } : t
+        ));
 
         // Connect terminal input to shell
         term.onData(async (data) => {
@@ -120,15 +115,15 @@ export function Terminal() {
           })();
         }
 
-        // Initialize project
+        // Create template directory and initialize project
+        await initializeTemplate(webcontainer);
+        await syncFileSystem(setFiles);
+
+        // Run commands in sequence
         const writer = shellProcess.input.getWriter();
         try {
-          writer.write('cd typescript-template\n');
-          writer.write('npm create vite@latest . -- --template react-ts\n');
-          // After project creation, start the dev server
-          setTimeout(() => {
-            writer.write('npm install && npm run dev\n');
-          }, 6000);
+          // Create project with -y flag and chain commands
+          writer.write('yes | npm create vite@latest typescript-template -- --template react-ts && cd typescript-template && npm install && npm run dev\n');
         } finally {
           writer.releaseLock();
         }
@@ -144,16 +139,34 @@ export function Terminal() {
     return () => {
       shellProcess?.kill();
     };
-  }, [isTerminalReady, setFiles, setPreviewUrl]);
+  }, [isTerminalReady, setFiles, setPreviewUrl, activeTerminal]);
+
+  const addNewTerminal = async () => {
+    const newId = String(terminals.length + 1);
+    setTerminals(prev => [...prev, { id: newId, process: null }]);
+    setActiveTerminal(newId);
+  };
 
   return (
     <div className="flex flex-col">
-      <TerminalHeader />
-      <div 
-        ref={terminalRef}
-        className="h-48 bg-[#1e1e1e] text-[#cccccc] overflow-hidden"
-        style={{ padding: '4px' }}
-      />
+      <div className="flex items-center bg-[#1e1e1e] border-b border-[#2d2d2d]">
+        <TerminalHeader terminals={terminals} activeTerminal={activeTerminal} onTerminalSelect={setActiveTerminal} />
+        <button
+          onClick={addNewTerminal}
+          className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-[#2d2d2d] rounded"
+        >
+          + New Terminal
+        </button>
+      </div>
+      <div className="flex">
+        <div className="flex-1">
+          <div 
+            ref={terminalRef}
+            className="h-48 bg-[#1e1e1e] text-[#cccccc] overflow-hidden"
+            style={{ padding: '4px' }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
