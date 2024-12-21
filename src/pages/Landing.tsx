@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Code2, Play, Zap, Users, Globe2 } from 'lucide-react';
+import { Code2, Play, Zap, Users, Globe2, Terminal, Box } from 'lucide-react';
 import { MainLayout } from '../components/layouts/MainLayout';
 
 export default function Landing() {
@@ -10,19 +10,22 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800"></div>
         <div className="relative container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Code2 className="w-16 h-16 mx-auto mb-8 text-blue-500" />
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-400">
-              The Next Generation Code Editor
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <Code2 className="w-16 h-16 text-blue-500" />
+              <span className="px-3 py-1 text-sm font-medium bg-blue-500/10 text-blue-500 rounded-full">Beta</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-400">
+              Code Directly in Your Browser
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-10">
-              A powerful, browser-based IDE designed for seamless coding interviews, real-time collaboration, and instant deployment.
+              A powerful, browser-based IDE designed for modern development. Write, run, and deploy code without leaving your browser.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/code"
                 className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-lg transition-colors"
               >
-                Try Code Editor Now
+                Try BrowserCode Now
               </Link>
               <a
                 href="#features"
@@ -39,18 +42,28 @@ export default function Landing() {
       <section id="features" className="py-20 bg-gray-900">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16 text-white">
-            Powerful Features for Modern Development
+            Built for Modern Development
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<Terminal className="w-8 h-8 text-blue-500" />}
+              title="Browser-Native"
+              description="Run your development environment entirely in the browser. No downloads, no setup, just code."
+            />
+            <FeatureCard
+              icon={<Box className="w-8 h-8 text-blue-500" />}
+              title="WebContainer Powered"
+              description="Full Node.js environment running in your browser with filesystem, terminal, and npm support."
+            />
             <FeatureCard
               icon={<Play className="w-8 h-8 text-blue-500" />}
               title="Hot Reload"
-              description="See your changes instantly with our lightning-fast hot reload capability. No more waiting for rebuilds."
+              description="See your changes instantly with our lightning-fast hot reload capability."
             />
             <FeatureCard
               icon={<Users className="w-8 h-8 text-blue-500" />}
               title="Interview Ready"
-              description="Perfect for technical interviews with real-time code sharing, execution, and collaboration features."
+              description="Perfect for technical interviews with real-time code sharing and collaboration features."
             />
             <FeatureCard
               icon={<Globe2 className="w-8 h-8 text-blue-500" />}
@@ -60,7 +73,7 @@ export default function Landing() {
             <FeatureCard
               icon={<Zap className="w-8 h-8 text-blue-500" />}
               title="Instant Setup"
-              description="Zero configuration required. Start coding immediately with our pre-configured development environment."
+              description="Zero configuration required. Start coding immediately with our pre-configured environment."
             />
           </div>
         </div>
@@ -73,13 +86,13 @@ export default function Landing() {
             Ready to Start Coding?
           </h2>
           <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Join thousands of developers who are already using our platform for interviews, learning, and development.
+            Join developers who are already using BrowserCode for interviews, learning, and development.
           </p>
           <Link
             to="/code"
             className="inline-block px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-lg transition-colors"
           >
-            Launch Code Editor
+            Launch Editor
           </Link>
         </div>
       </section>
