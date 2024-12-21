@@ -1,14 +1,13 @@
 import { useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { startShell, mountFiles } from '../../services/webcontainer';
+import { getWebContainerInstance } from '../../services/webcontainer';
+import { initializeTemplate } from '../../services/templateService';
 import { TerminalHeader } from './TerminalHeader';
-import { useFileSystem } from '../../context/FileSystemContext';
-import 'xterm/css/xterm.css';
 import { usePreview } from '../../context/PreviewContext';
+import 'xterm/css/xterm.css';
 
 export function Terminal() {
-  const { files } = useFileSystem();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -68,15 +67,25 @@ export function Terminal() {
     if (!isTerminalReady || !xtermRef.current) return;
 
     const term = xtermRef.current;
-    let shellProcess: Awaited<ReturnType<typeof startShell>> | null = null;
+    let shellProcess: any = null;
 
     const initWebContainer = async () => {
       try {
-        await mountFiles(files);
-        shellProcess = await startShell();
+        const webcontainer = await getWebContainerInstance();
         
-        // Handle user input
-        const handleData = async (data: string) => {
+        // Create template directory
+        await initializeTemplate(webcontainer);
+
+        // Start shell and connect to terminal
+        shellProcess = await webcontainer.spawn('jsh', {
+          terminal: {
+            cols: 80,
+            rows: 24,
+          }
+        });
+
+        // Connect terminal input to shell
+        term.onData(async (data) => {
           if (shellProcess?.input) {
             const writer = shellProcess.input.getWriter();
             try {
@@ -85,39 +94,30 @@ export function Terminal() {
               writer.releaseLock();
             }
           }
-        };
-        
-        term.onData(handleData);
+        });
 
-        // Handle shell output
+        // Connect shell output to terminal
         if (shellProcess.output) {
           const reader = shellProcess.output.getReader();
-          
-          // Install dependencies and start dev server
-          const installDeps = shellProcess.input.getWriter();
-          try {
-            await installDeps.write('npm install && npm run dev\n');
-          } finally {
-            installDeps.releaseLock();
-          }
-
-          // Read output and look for dev server URL
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            term.write(value);
-            
-            // Look for Vite dev server URL in the output
-            if (value.includes('Local:')) {
-              const match = value.match(/Local:\s+(http:\/\/localhost:\d+)/);
-              if (match && match[1]) {
-                // Convert localhost URL to WebContainer URL
-                const url = match[1].replace('localhost', 'localhost.webcontainer.io');
-                setPreviewUrl(url);
-              }
+          (async () => {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              term.write(value);
             }
-          }
+          })();
         }
+
+        // Initialize project
+        const writer = shellProcess.input.getWriter();
+        try {
+          writer.write('mkdir typescript-template\n');
+          writer.write('cd typescript-template\n');
+          writer.write('npm create vite@latest . -- --template react-ts\n');
+        } finally {
+          writer.releaseLock();
+        }
+
       } catch (error) {
         console.error('Failed to start shell:', error);
         term.write('\x1b[31mFailed to start shell. Please try refreshing the page.\x1b[0m\r\n');
@@ -129,7 +129,7 @@ export function Terminal() {
     return () => {
       shellProcess?.kill();
     };
-  }, [isTerminalReady, files]);
+  }, [isTerminalReady]);
 
   return (
     <div className="flex flex-col">
