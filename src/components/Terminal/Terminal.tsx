@@ -198,11 +198,11 @@ export function Terminal() {
           + New Terminal
         </button>
       </div>
-      <div className="flex flex-1">
+      <div className="flex-1 min-h-0">
         <div className="flex-1 h-full">
           <div 
             ref={terminalRef}
-            className="w-full h-full bg-[#1e1e1e] text-[#cccccc] overflow-hidden"
+            className="w-full h-full bg-[#1e1e1e] text-[#cccccc] overflow-auto"
             style={{ padding: '4px' }}
           />
         </div>
