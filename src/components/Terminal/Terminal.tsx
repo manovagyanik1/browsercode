@@ -77,6 +77,16 @@ export function Terminal() {
     const initWebContainer = async () => {
       try {
         const webcontainer = await getWebContainerInstance();
+
+        // Listen for server-ready event before starting anything
+        webcontainer.on('server-ready', (port, url) => {
+          console.log('Server ready on port:', port);
+          console.log('Original URL:', url);
+          // Convert localhost URL to WebContainer URL
+          const previewUrl = url.replace('localhost', 'localhost.webcontainer.io');
+          console.log('Preview URL:', previewUrl);
+          setPreviewUrl(previewUrl);
+        });
         
         // Start shell first and connect to terminal
         shellProcess = await webcontainer.spawn('jsh', {
