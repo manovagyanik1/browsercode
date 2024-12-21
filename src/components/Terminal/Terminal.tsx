@@ -1,15 +1,19 @@
 import { useEffect, useRef, useLayoutEffect, useState } from 'react';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { startShell } from '../../services/webcontainer';
+import { startShell, mountFiles } from '../../services/webcontainer';
 import { TerminalHeader } from './TerminalHeader';
+import { useFileSystem } from '../../context/FileSystemContext';
 import 'xterm/css/xterm.css';
+import { usePreview } from '../../context/PreviewContext';
 
 export function Terminal() {
+  const { files } = useFileSystem();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [isTerminalReady, setIsTerminalReady] = useState(false);
+  const { setPreviewUrl } = usePreview();
 
   // Initialize xterm
   useLayoutEffect(() => {
@@ -68,11 +72,19 @@ export function Terminal() {
 
     const initWebContainer = async () => {
       try {
+        await mountFiles(files);
         shellProcess = await startShell();
         
         // Handle user input
-        const handleData = (data: string) => {
-          shellProcess?.input?.write(data);
+        const handleData = async (data: string) => {
+          if (shellProcess?.input) {
+            const writer = shellProcess.input.getWriter();
+            try {
+              await writer.write(data);
+            } finally {
+              writer.releaseLock();
+            }
+          }
         };
         
         term.onData(handleData);
@@ -80,10 +92,30 @@ export function Terminal() {
         // Handle shell output
         if (shellProcess.output) {
           const reader = shellProcess.output.getReader();
+          
+          // Install dependencies and start dev server
+          const installDeps = shellProcess.input.getWriter();
+          try {
+            await installDeps.write('npm install && npm run dev\n');
+          } finally {
+            installDeps.releaseLock();
+          }
+
+          // Read output and look for dev server URL
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             term.write(value);
+            
+            // Look for Vite dev server URL in the output
+            if (value.includes('Local:')) {
+              const match = value.match(/Local:\s+(http:\/\/localhost:\d+)/);
+              if (match && match[1]) {
+                // Convert localhost URL to WebContainer URL
+                const url = match[1].replace('localhost', 'localhost.webcontainer.io');
+                setPreviewUrl(url);
+              }
+            }
           }
         }
       } catch (error) {
@@ -97,7 +129,7 @@ export function Terminal() {
     return () => {
       shellProcess?.kill();
     };
-  }, [isTerminalReady]);
+  }, [isTerminalReady, files]);
 
   return (
     <div className="flex flex-col">

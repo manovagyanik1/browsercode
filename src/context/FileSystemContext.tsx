@@ -75,19 +75,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     ]
   },
   {
-    name: 'public',
-    path: 'public',
-    type: 'directory',
-    children: [
-      {
-        name: 'vite.svg',
-        path: 'public/vite.svg',
-        type: 'file',
-        content: ''
-      }
-    ]
-  },
-  {
     name: 'index.html',
     path: 'index.html',
     type: 'file',
@@ -95,7 +82,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
   </head>
@@ -119,6 +105,26 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         "build": "tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview"
+      },
+      "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "lucide-react": "^0.358.0"
+      },
+      "devDependencies": {
+        "@types/react": "^18.2.64",
+        "@types/react-dom": "^18.2.21",
+        "@typescript-eslint/eslint-plugin": "^7.1.1",
+        "@typescript-eslint/parser": "^7.1.1",
+        "@vitejs/plugin-react": "^4.2.1",
+        "autoprefixer": "^10.4.18",
+        "eslint": "^8.57.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.5",
+        "postcss": "^8.4.35",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5.2.2",
+        "vite": "^5.1.6"
       }
     }, null, 2)
   },
