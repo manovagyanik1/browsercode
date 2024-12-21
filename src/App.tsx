@@ -1,85 +1,30 @@
-import { useEffect, useState } from 'react';
-import { Header } from './components/Header';
-import { EditorPane } from './components/Editor/EditorPane';
-import { FileExplorer } from './components/FileExplorer';
-import { Terminal } from './components/Terminal/Terminal';
-import { Preview } from './components/Preview/Preview';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import CodeEditor from './pages/CodeEditor';
+import Landing from './pages/Landing';
+import About from './pages/About';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
 import { FileSystemProvider } from './context/FileSystemContext';
-import { ResizablePanel } from './components/ResizablePanel';
 import { PreviewProvider } from './context/PreviewContext';
-import { VerticalResizeHandle } from './components/VerticalResizeHandle';
 
 export default function App() {
-  const [explorerWidth, setExplorerWidth] = useState(240);
-  const [terminalHeight, setTerminalHeight] = useState(200);
-
-  useEffect(() => {
-    // Handle page refresh and tab close
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const message = 'You will lose all your changes. Are you sure you want to leave?';
-      e.preventDefault();
-      e.returnValue = message;
-      return message;
-    };
-
-    // Handle browser back button
-    const handlePopState = (e: PopStateEvent) => {
-      e.preventDefault();
-      if (window.confirm('You will lose all your changes. Are you sure you want to leave?')) {
-        window.history.go(-1);
-      } else {
-        // Push a new state to prevent leaving
-        window.history.pushState(null, '', window.location.href);
-      }
-    };
-
-    // Push initial state to enable back button handling
-    window.history.pushState(null, '', window.location.href);
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-
   return (
-    <FileSystemProvider>
-      <PreviewProvider>
-        <div className="flex flex-col h-screen bg-gray-900 text-gray-100">
-          <Header />
-          <main className="flex-1 flex overflow-hidden">
-            <div style={{ width: explorerWidth }} className="h-full flex-shrink-0">
-              <FileExplorer />
-            </div>
-            <VerticalResizeHandle
-              orientation="vertical"
-              onResize={(delta) => setExplorerWidth(prev => Math.max(160, Math.min(480, prev + delta)))}
-            />
-
-            <div className="flex-1 flex flex-col min-w-0">
-              <div className="flex-1 h-full min-h-0">
-                <ResizablePanel
-                  leftPanel={<EditorPane />}
-                  rightPanel={<Preview />}
-                  initialLeftWidth={60}
-                  minLeftWidth={30}
-                  minRightWidth={20}
-                />
-              </div>
-              <VerticalResizeHandle
-                orientation="horizontal"
-                onResize={(delta) => setTerminalHeight(prev => Math.max(100, Math.min(800, prev - delta)))}
-              />
-              <div style={{ height: terminalHeight }} className="flex-shrink-0">
-                <Terminal />
-              </div>
-            </div>
-          </main>
-        </div>
-      </PreviewProvider>
-    </FileSystemProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/code" element={
+          <FileSystemProvider>
+            <PreviewProvider>
+              <CodeEditor />
+            </PreviewProvider>
+          </FileSystemProvider>
+        } />
+        <Route path="/about" element={<About />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </Router>
   );
 }
