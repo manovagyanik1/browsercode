@@ -5,6 +5,7 @@ import { useFileSystem } from '../../context/FileSystemContext';
 import { ContextMenu } from './ContextMenu';
 import { EditableLabel } from './EditableLabel';
 import { FileIcon } from './FileIcon';
+import { sortFileNodes } from '../../utils/fileUtils';
 
 interface FileTreeItemProps {
   node: FileNode;
@@ -78,7 +79,7 @@ export function FileTreeItem({ node, level }: FileTreeItemProps) {
           onRename={() => setIsEditing(true)}
         />
       )}
-      {isDirectory && isOpen && node.children?.map((child, index) => (
+      {isDirectory && isOpen && sortFileNodes(node.children || []).map((child, index) => (
         <FileTreeItem key={index} node={child} level={level + 1} />
       ))}
     </div>
