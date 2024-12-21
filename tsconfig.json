@@ -24,7 +24,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "jsxImportSource": "react"
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
