@@ -14,6 +14,7 @@ export interface FileSystemContextType {
   createDirectory: (path: string) => void;
   deleteFile: (path: string) => void;
   renameFile: (oldPath: string, newPath: string) => void;
+  moveFile: (oldPath: string, newPath: string) => void;
   updateFileContent: (path: string, content: string) => void;
   setCurrentFile: (path: string | null) => void;
 }
