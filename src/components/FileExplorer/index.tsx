@@ -35,7 +35,7 @@ export function FileExplorer() {
   };
 
   return (
-    <div className="w-64 bg-[#1e1e1e] border-r border-[#2d2d2d] flex flex-col">
+    <div className="h-full flex flex-col bg-[#1e1e1e]">
       <div className="p-3 border-b border-[#2d2d2d] flex items-center justify-between">
         <span className="text-sm font-medium text-[#cccccc]">EXPLORER</span>
         <div className="flex gap-2">

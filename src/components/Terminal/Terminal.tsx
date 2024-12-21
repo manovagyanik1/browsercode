@@ -158,7 +158,7 @@ export function Terminal() {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="flex items-center bg-[#1e1e1e] border-b border-[#2d2d2d]">
         <TerminalHeader terminals={terminals} activeTerminal={activeTerminal} onTerminalSelect={setActiveTerminal} />
         <button
@@ -168,11 +168,11 @@ export function Terminal() {
           + New Terminal
         </button>
       </div>
-      <div className="flex">
-        <div className="flex-1">
+      <div className="flex flex-1">
+        <div className="flex-1 h-full">
           <div 
             ref={terminalRef}
-            className="h-48 bg-[#1e1e1e] text-[#cccccc] overflow-hidden"
+            className="w-full h-full bg-[#1e1e1e] text-[#cccccc] overflow-hidden"
             style={{ padding: '4px' }}
           />
         </div>

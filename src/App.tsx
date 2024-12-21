@@ -51,22 +51,27 @@ export default function App() {
         <div className="flex flex-col h-screen bg-gray-900 text-gray-100">
           <Header />
           <main className="flex-1 flex overflow-hidden">
-            <div style={{ width: explorerWidth, minWidth: 160 }} className="flex-shrink-0">
+            <div style={{ width: explorerWidth }} className="h-full flex-shrink-0">
               <FileExplorer />
             </div>
             <VerticalResizeHandle
+              orientation="vertical"
               onResize={(delta) => setExplorerWidth(prev => Math.max(160, Math.min(480, prev + delta)))}
             />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <ResizablePanel
-                leftPanel={<EditorPane />}
-                rightPanel={<Preview />}
-                initialLeftWidth={60}
-                minLeftWidth={30}
-                minRightWidth={20}
-              />
+
+            <div className="flex-1 flex flex-col min-w-0">
+              <div className="flex-1 h-full min-h-0">
+                <ResizablePanel
+                  leftPanel={<EditorPane />}
+                  rightPanel={<Preview />}
+                  initialLeftWidth={60}
+                  minLeftWidth={30}
+                  minRightWidth={20}
+                />
+              </div>
               <VerticalResizeHandle
-                onResize={(delta) => setTerminalHeight(prev => Math.max(100, Math.min(800, prev + delta)))}
+                orientation="horizontal"
+                onResize={(delta) => setTerminalHeight(prev => Math.max(100, Math.min(800, prev - delta)))}
               />
               <div style={{ height: terminalHeight }} className="flex-shrink-0">
                 <Terminal />

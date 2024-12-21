@@ -73,7 +73,7 @@ export function ResizablePanel({
   };
 
   return (
-    <div ref={containerRef} className="flex-1 flex overflow-hidden">
+    <div ref={containerRef} className="w-full h-full flex">
       <div style={{ width: `${leftWidth}%` }} className="h-full overflow-hidden">
         {leftPanel}
       </div>

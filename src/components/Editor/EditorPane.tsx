@@ -71,26 +71,28 @@ export function EditorPane() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#1e1e1e]">
+    <div className="w-full h-full flex flex-col bg-[#1e1e1e] min-w-0">
       <EditorHeader />
-      {!currentFile ? (
-        <EmptyEditor />
-      ) : (
-        <Editor
-          height="100%"
-          defaultLanguage={getFileLanguage(currentFile)}
-          value={getFileContent(currentFile, files)}
-          theme="vs-dark"
-          options={{
-            ...EDITOR_OPTIONS,
-            quickSuggestions: true,
-            suggestOnTriggerCharacters: true,
-            semanticHighlighting: true,
-          }}
-          onChange={handleEditorChange}
-          path={currentFile}
-        />
-      )}
+      <div className="flex-1 min-h-0 relative">
+        {!currentFile ? (
+          <EmptyEditor />
+        ) : (
+          <Editor
+            height="100%"
+            defaultLanguage={getFileLanguage(currentFile)}
+            value={getFileContent(currentFile, files)}
+            theme="vs-dark"
+            options={{
+              ...EDITOR_OPTIONS,
+              quickSuggestions: true,
+              suggestOnTriggerCharacters: true,
+              semanticHighlighting: true,
+            }}
+            onChange={handleEditorChange}
+            path={currentFile}
+          />
+        )}
+      </div>
     </div>
   );
 }
