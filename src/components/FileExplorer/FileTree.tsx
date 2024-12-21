@@ -21,21 +21,8 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
   const [isEditing, setIsEditing] = useState(false);
   const { setCurrentFile, renameFile, currentFile, createFile, createDirectory, deleteFile } = useFileSystem();
   const isDirectory = node.type === 'directory';
-  const { draggedItem, handleDragStart, handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
+  const { draggedItem, dragTarget, handleDragStart, handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (currentFile === node.path && (e.key === 'Delete' || e.key === 'Backspace')) {
-        e.preventDefault();
-        deleteFile(node.path);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentFile, node.path, deleteFile]);
-
-  // Auto-open directory when creating a new item inside it
   useEffect(() => {
     if (isCreating && node.path === isCreating.parentPath) {
       setIsOpen(true);
@@ -64,30 +51,18 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
     setCurrentFile(node.path);
   };
 
-  const handleNewItemSubmit = (name: string) => {
-    if (!name) {
-      onCreateFinish?.();
-      return;
-    }
-
-    const parentPath = isCreating?.parentPath || '/';
-    const newPath = parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
-
-    if (isCreating?.type === 'file') {
-      createFile(newPath);
-      setCurrentFile(newPath);
-    } else if (isCreating?.type === 'folder') {
-      createDirectory(newPath);
-    }
-    onCreateFinish?.();
-  };
-
   const isActive = currentFile === node.path;
-  const className = `flex items-center gap-1 px-2 py-1 cursor-pointer text-[13px] ${
-    isActive ? 'bg-[#37373d] text-white' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-  }`;
+  const isDragTarget = dragTarget === node.path && isDirectory;
+  const isDragging = draggedItem === node.path;
+  const canDrop = isDirectory && draggedItem !== node.path;
 
-  const shouldShowCreating = isCreating && node.path === isCreating.parentPath;
+  const className = `
+    flex items-center gap-1 px-2 py-1 cursor-pointer text-[13px]
+    ${isActive ? 'bg-[#37373d] text-white' : 'text-[#cccccc] hover:bg-[#2a2d2e]'}
+    ${isDragTarget ? 'bg-[#2a2d2e] ring-1 ring-blue-500' : ''}
+    ${isDragging ? 'opacity-50' : ''}
+    transition-all duration-150
+  `;
 
   return (
     <div>
@@ -97,11 +72,26 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
-        draggable
-        onDragStart={() => handleDragStart(node.path)}
-        onDragOver={(e) => isDirectory && handleDragOver(e)}
-        onDragLeave={(e) => isDirectory && handleDragLeave(e)}
-        onDrop={(e) => isDirectory && handleDrop(e, node.path)}
+        draggable={!isEditing}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          handleDragStart(node.path);
+        }}
+        onDragOver={(e) => {
+          if (canDrop) {
+            handleDragOver(e, node.path);
+          }
+        }}
+        onDragLeave={(e) => {
+          if (canDrop) {
+            handleDragLeave(e);
+          }
+        }}
+        onDrop={(e) => {
+          if (canDrop) {
+            handleDrop(e, node.path);
+          }
+        }}
       >
         {isDirectory && (
           <span className="w-4 h-4">
@@ -136,9 +126,9 @@ export function FileTreeItem({ node, level, isCreating, onCreateFinish }: FileTr
         />
       )}
 
-      {isDirectory && (isOpen || shouldShowCreating) && (
+      {isDirectory && (isOpen || isDragTarget) && (
         <div>
-          {shouldShowCreating && (
+          {isCreating && node.path === isCreating.parentPath && (
             <div className="flex items-center" style={{ paddingLeft: `${(level + 1) * 12}px` }}>
               <FileIcon isDirectory={isCreating.type === 'folder'} />
               <EditableLabel
