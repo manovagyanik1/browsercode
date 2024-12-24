@@ -10,27 +10,38 @@ export function FileExplorer() {
   const { handleDragOver, handleDragLeave, handleDrop } = useDragAndDrop();
 
   const getTargetDirectory = () => {
-    if (!currentFile) return '/';
-    
-    // If current selection is a directory, use it as the target
-    if (currentFile.endsWith('/')) return currentFile;
-    
-    // Get the parent directory of the current file
+    if (!currentFile) {
+      console.log('No current file, returning root directory');
+      return '/'; 
+    }
+  
+    if (currentFile.endsWith('/')) {
+      console.log(`Selected directory: ${currentFile}`);
+      return currentFile; 
+    }
+  
     const parts = currentFile.split('/');
-    const isDirectory = files.some(f => 
-      f.type === 'directory' && f.path === currentFile
-    );
+    const parentPath = parts.join('/'); 
     
-    return isDirectory ? currentFile : parts.slice(0, -1).join('/') || '/';
+    console.log(`Current file: ${currentFile}, Parent path: ${parentPath}`);
+    
+    return parentPath || '/';
   };
+  
+  
 
   const handleCreateFile = () => {
-    setIsCreating({ type: 'file', parentPath: getTargetDirectory() });
+    const targetDirectory = getTargetDirectory();
+    console.log('Creating file in:', targetDirectory);
+    setIsCreating({ type: 'file', parentPath: targetDirectory });
   };
-
+  
   const handleCreateFolder = () => {
-    setIsCreating({ type: 'folder', parentPath: getTargetDirectory() });
+    const targetDirectory = getTargetDirectory();
+    console.log('Creating folder in:', targetDirectory);
+    setIsCreating({ type: 'folder', parentPath: targetDirectory });
   };
+  
 
   return (
     <div 
